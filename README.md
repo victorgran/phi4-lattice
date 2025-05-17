@@ -22,3 +22,9 @@ Implementation of the $\phi^{4}$ Euclidean theory on a lattice.
 
 - [ ] Does DifferentialEquations.jl automatically chooses a symplectic integrator for the system?
 
+## Direct dependencies so far
+
+* numpy
+* tqdm
+* matplotlib
+* (Whatever was installed for jupyter notebooks).
