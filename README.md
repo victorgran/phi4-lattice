@@ -28,3 +28,4 @@ Implementation of the $\phi^{4}$ Euclidean theory on a lattice.
 * tqdm
 * matplotlib
 * (Whatever was installed for jupyter notebooks).
+* SciPy for curve fits.
