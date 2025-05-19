@@ -81,7 +81,8 @@ class Phi4Lattice:
 
     def sample(self, initial_sample: np.ndarray, num_samples: int, method: str, rng: np.random.Generator,
                half_width: float = None,
-               integration: str = "leapfrog", delta_t: float = None, time_steps: int = None
+               integration: str = "leapfrog", delta_t: float = None, time_steps: int = None,
+               progress_bar: bool = True
                ) -> tuple[list[np.ndarray], list[int]]:
         """
         Sample field configurations using a given proposal method.
@@ -105,6 +106,8 @@ class Phi4Lattice:
             Time step size for the integration scheme.
         time_steps : int
             Number of time steps for the integration scheme.
+        progress_bar : bool, default=True
+            Whether to display a progress bar for the sample generation.
 
         Returns
         -------
@@ -119,7 +122,7 @@ class Phi4Lattice:
         current_field = initial_sample
         current_action = self.evaluate_action(current_field)
 
-        for idx in tqdm(range(num_samples - 1)):
+        for idx in tqdm(range(num_samples - 1), disable=not progress_bar):
             proposed_field, proposed_action, log_acceptance = propose_sample(current_field, current_action)
 
             if log_acceptance >= 0 or np.exp(log_acceptance) > rng.random():
