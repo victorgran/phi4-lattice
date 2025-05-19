@@ -49,7 +49,7 @@ def show_acceptance():
     acceptance_grid = data["acceptance_grid"]  # Each row is a specific lattice size, each column a half-width.
     linear_sizes = data["linear_sizes"]
     half_widths = data["half_widths"]
-    num_samples = data["num_samples"]
+    # num_samples = data["num_samples"]
 
     sizes_grid, widths_grid = np.meshgrid(linear_sizes, half_widths)
 
