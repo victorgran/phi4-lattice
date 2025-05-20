@@ -2,6 +2,14 @@
 
 Implementation of the $\phi^{4}$ Euclidean theory on a lattice.
 
+## Until next week
+
+- [ ] Compare the results of Metropolis with a uniform proposal and Hamiltonian Monte Carlo.
+This requires checking their autocorrelation times to make the proper binning for the error estimation.
+Then, compute the differences $(x_{\text{U}} - x_{\text{H}}) / \sqrt{(\delta x_{\text{U}})^{2} + (\delta x_{\text{H}})^{2}}$ for the observable showing phase transition.
+- [ ] Implement the Omelyan integrator for the Hamiltonian Monte Carlo, and obtain a similar plot to that of Figure 1 in _Testing and tuning symplectic integrators for Hybrid Monte Carlo algorithm in lattice QCD_.
+- [ ] If time allows, check obtaining the proper binning with PyErr.
+
 ## Structure
 
 - [ ] Create directory for preliminaries.
