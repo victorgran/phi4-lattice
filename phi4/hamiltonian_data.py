@@ -2,7 +2,7 @@ from collections.abc import Callable
 import numpy as np
 from tqdm import tqdm
 
-from lattice import Phi4Lattice
+from phi4.implementation.lattice import Phi4Lattice
 
 
 def searchStepSize(initial_guess: float, get_acceptance: Callable, target_acceptance: float):

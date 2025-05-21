@@ -1,6 +1,6 @@
 import numpy as np
 
-from lattice import Phi4Lattice
+from phi4.implementation.lattice import Phi4Lattice
 
 
 def test_lattice_uniform(lattice: Phi4Lattice):
