@@ -10,6 +10,10 @@ class NumpyEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, np.ndarray):
             return obj.tolist()
+        elif isinstance(obj, np.integer):
+            return int(obj)
+        elif isinstance(obj, np.floating):
+            return float(obj)
         return super().default(obj)
 
 
@@ -83,28 +87,38 @@ def find_acceptance_parameter(initial_guess: float,
     return last_sample, parameter
 
 
-def find_parameters_leapfrog(linear_sizes: list[int] | np.ndarray,
-                             mass2_values: list[float] | np.ndarray,
-                             num_samples: int,
-                             target_acceptance: float,
-                             filename: str):
-    counter = 0
-    data_params = {}
+def find_parameters(linear_sizes: list[int] | np.ndarray,
+                    mass2_values: list[float] | np.ndarray,
+                    num_samples: int,
+                    target_acceptance: float,
+                    filename: str,
+                    initial_guess: float,
+                    method: str,
+                    integration: str = None,
+                    tolerance: float = 0.02,
+                    decimals: int = 3):
     rng = np.random.default_rng(seed=42)
     lattice = Phi4Lattice(linear_sites=5, mass2=-1.0, coupling_strength=8.0)
-
-    initial_guess = 0.3
-    l_first_guess = initial_guess
-    initial_mass = mass2_values[0]
-    sampler_dict = {"num_samples": num_samples, "method": 'hamiltonian', "integration": 'leapfrog',
+    sampler_dict = {"num_samples": num_samples, "method": method,
+                    "integration": integration,
                     "rng": rng, "progress_bar": False}
 
-    def partial_sample(x: float, init_sample):
-        samples, acceptances = lattice.sample(init_sample,
-                                              delta_t=x,
-                                              time_steps=round(1. / x),
-                                              **sampler_dict)
-        return samples[-1], np.mean(acceptances)
+    if method == 'uniform':
+        def partial_sample(x: float, init_sample):
+            samples, acceptances = lattice.sample(init_sample, half_width=x, **sampler_dict)
+            return samples[-1], np.mean(acceptances)
+    elif method == 'hamiltonian':
+        def partial_sample(x: float, init_sample):
+            samples, acceptances = lattice.sample(init_sample, delta_t=x,
+                                                  time_steps=round(1. / x), **sampler_dict)
+            return samples[-1], np.mean(acceptances)
+    else:
+        raise ValueError(f"Method '{method}' not implemented")
+
+    counter = 0
+    data_params = {}
+    l_first_guess = initial_guess
+    initial_mass = mass2_values[0]
 
     for linear_size in tqdm(linear_sizes, leave=True):
         lattice.linear_sites = linear_size
@@ -117,10 +131,11 @@ def find_parameters_leapfrog(linear_sizes: list[int] | np.ndarray,
                                                                target_acceptance=target_acceptance,
                                                                get_acceptance=lambda x: partial_sample(
                                                                    x, initial_sample),
-                                                               tolerance=0.02)
+                                                               tolerance=tolerance,
+                                                               decimals=decimals)
             data_params[counter] = {"linear_size": linear_size,
                                     "mass2": mass2,
-                                    "delta_t": np.round(parameter, decimals=3),
+                                    "parameter": np.round(parameter, decimals=decimals),
                                     "initial_sample": next_sample}
             counter += 1
             initial_guess = parameter
@@ -136,15 +151,36 @@ def find_parameters_leapfrog(linear_sizes: list[int] | np.ndarray,
 
 
 if __name__ == "__main__":
-    find_parameters_leapfrog(linear_sizes=np.linspace(5, 50, num=20, endpoint=True, dtype=int),
-                             mass2_values=[-1.0],
-                             num_samples=3_000, target_acceptance=0.75,
-                             filename="data/hmc_leapfrog1.json")
-    find_parameters_leapfrog(linear_sizes=[16],
-                             mass2_values=np.linspace(0, -12, num=20, endpoint=True),
-                             num_samples=3_000, target_acceptance=0.75,
-                             filename="data/hmc_leapfrog2.json")
-    find_parameters_leapfrog(linear_sizes=[26],
-                             mass2_values=np.linspace(0, -12, num=20, endpoint=True),
-                             num_samples=3_000, target_acceptance=0.75,
-                             filename="data/hmc_leapfrog3.json")
+    gen_num_samples = 3_000
+    gen_trg_acceptance = 0.75
+    gen_method = "hamiltonian"
+    gen_integration = "leapfrog"
+    if gen_method == "uniform":
+        filenames = [f"data/{gen_method}{k}.json" for k in range(1, 4)]
+    else:
+        filenames = [f"data/{gen_method}_{gen_integration}_{k}.json" for k in range(1, 4)]
+
+    find_parameters(linear_sizes=np.linspace(5, 7, num=2, endpoint=True, dtype=int),
+                    mass2_values=[-1.0],
+                    num_samples=gen_num_samples,
+                    target_acceptance=gen_trg_acceptance,
+                    filename=filenames[0],
+                    initial_guess=0.3,
+                    method=gen_method,
+                    integration=gen_integration)
+    find_parameters(linear_sizes=[16],
+                    mass2_values=np.linspace(0, -12, num=20, endpoint=True),
+                    num_samples=gen_num_samples,
+                    target_acceptance=gen_trg_acceptance,
+                    filename=filenames[1],
+                    initial_guess=0.3,
+                    method=gen_method,
+                    integration=gen_integration)
+    find_parameters(linear_sizes=[26],
+                    mass2_values=np.linspace(0, -12, num=20, endpoint=True),
+                    num_samples=gen_num_samples,
+                    target_acceptance=gen_trg_acceptance,
+                    filename=filenames[2],
+                    initial_guess=0.3,
+                    method=gen_method,
+                    integration=gen_integration)
