@@ -28,7 +28,7 @@ Then, compute the differences $(x_{\text{U}} - x_{\text{H}}) / \sqrt{(\delta x_{
 
 ## Other thoughts
 
-- [ ] Does DifferentialEquations.jl automatically chooses a symplectic integrator for the system?
+- [ ] Does DifferentialEquations.jl automatically choose a symplectic integrator for the system?
 
 ## Direct dependencies so far
 
