@@ -155,12 +155,13 @@ if __name__ == "__main__":
     gen_trg_acceptance = 0.75
     gen_method = "hamiltonian"
     gen_integration = "leapfrog"
+
     if gen_method == "uniform":
         filenames = [f"data/{gen_method}{k}.json" for k in range(1, 4)]
     else:
         filenames = [f"data/{gen_method}_{gen_integration}_{k}.json" for k in range(1, 4)]
 
-    find_parameters(linear_sizes=np.linspace(5, 7, num=2, endpoint=True, dtype=int),
+    find_parameters(linear_sizes=np.linspace(5, 50, num=20, endpoint=True, dtype=int),
                     mass2_values=[-1.0],
                     num_samples=gen_num_samples,
                     target_acceptance=gen_trg_acceptance,
