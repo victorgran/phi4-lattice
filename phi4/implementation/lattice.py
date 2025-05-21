@@ -114,7 +114,7 @@ class Phi4Lattice:
         tuple[list[numpy.ndarray], list[int]]
             List of samples and list with the acceptance of each generated sample (1 if accepted, 0 otherwise).
         """
-        from proposals import get_proposal_function
+        from .proposals import get_proposal_function
         propose_sample = get_proposal_function(self, method, rng, half_width, integration, delta_t, time_steps)
 
         samples = [initial_sample]

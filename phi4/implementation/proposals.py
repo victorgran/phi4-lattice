@@ -2,7 +2,7 @@ from collections.abc import Callable
 from functools import partial
 import numpy as np
 
-from lattice import Phi4Lattice
+from .lattice import Phi4Lattice
 
 
 def propose_uniform(current_field: np.ndarray,
@@ -126,7 +126,7 @@ def get_proposal_function(lattice: Phi4Lattice,
         assert time_steps is not None, "Hamiltonian Monte Carlo requires specifying time_steps parameter."
 
         if integration.lower() == "leapfrog":
-            from integrators import leapfrog_integrator
+            from .integrators import leapfrog_integrator
             integrator = partial(leapfrog_integrator, force_function=lattice.evaluate_force,
                                  delta_t=delta_t, time_steps=time_steps)
         else:
