@@ -23,8 +23,8 @@ def five_stencil_laplacian(field: np.ndarray) -> np.ndarray:
 
 class Phi4Lattice:
     def __init__(self, linear_sites: int, mass2: float, coupling_strength: float):
-        self.linear_sites = linear_sites
-        self.shape = (self.linear_sites, self.linear_sites)
+        self._linear_sites = linear_sites
+        self.shape = (self._linear_sites, self._linear_sites)
         self.mass2 = mass2
         self.coupling_strength = coupling_strength
 
@@ -37,6 +37,15 @@ class Phi4Lattice:
 
     def __repr__(self):
         return f"Phi4Lattice({self.linear_sites}, {self.mass2}, {self.coupling_strength})"
+
+    @property
+    def linear_sites(self):
+        return self._linear_sites
+
+    @linear_sites.setter
+    def linear_sites(self, new_linear_sites: int):
+        self._linear_sites = new_linear_sites
+        self.shape = (self._linear_sites, self._linear_sites)
 
     def evaluate_action(self, field: np.ndarray) -> float:
         """
