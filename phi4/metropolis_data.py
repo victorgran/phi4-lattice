@@ -29,7 +29,7 @@ def acceptance_width_size(data_file: str) -> None:
         initial_sample = rng.random(size=lattice.shape)
         mean_acceptances = []
         for half_width in half_widths:
-            _, acceptances = lattice.sample(initial_sample=initial_sample,
+            _, acceptances = lattice.sample(initial_field=initial_sample,
                                             num_samples=num_samples,
                                             method='uniform',
                                             rng=rng,

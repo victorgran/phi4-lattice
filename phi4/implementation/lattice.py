@@ -1,5 +1,8 @@
+from collections.abc import Callable
 import numpy as np
 from tqdm import tqdm
+
+from .proposals import get_proposal_function
 
 
 def five_stencil_laplacian(field: np.ndarray) -> np.ndarray:
@@ -88,17 +91,21 @@ class Phi4Lattice:
         force = self.laplacian(field) - (self.mass2 * field) - (2 * self.coupling_strength * (field ** 3))
         return force * 2
 
-    def sample(self, initial_sample: np.ndarray, num_samples: int, method: str, rng: np.random.Generator,
+    def sample(self,
+               initial_field: np.ndarray,
+               num_samples: int,
+               method: str,
+               rng: np.random.Generator,
                half_width: float = None,
                integration: str = "leapfrog", delta_t: float = None, time_steps: int = None,
                progress_bar: bool = True
                ) -> tuple[list[np.ndarray], list[int]]:
         """
-        Sample field configurations using a given proposal method.
+        Sample field configurations with a specified proposal method.
 
         Parameters
         ----------
-        initial_sample : numpy.ndarray
+        initial_field : numpy.ndarray
             Initial state of the field to build the Markov chain.
         num_samples : int
             Number of total samples.
@@ -123,23 +130,85 @@ class Phi4Lattice:
         tuple[list[numpy.ndarray], list[int]]
             List of samples and list with the acceptance of each generated sample (1 if accepted, 0 otherwise).
         """
-        from .proposals import get_proposal_function
-        propose_sample = get_proposal_function(self, method, rng, half_width, integration, delta_t, time_steps)
+        propose_field = get_proposal_function(self, method, rng, half_width, integration, delta_t, time_steps)
 
-        samples = [initial_sample]
-        acceptance = [0 for _ in range(num_samples - 1)]
-        current_field = initial_sample
+        current_field = initial_field
         current_action = self.evaluate_action(current_field)
+        acceptance = [0 for _ in range(num_samples - 1)]
+        samples = [current_field]
 
         for idx in tqdm(range(num_samples - 1), disable=not progress_bar):
-            proposed_field, proposed_action, log_acceptance = propose_sample(current_field, current_action)
+            proposed_field, proposed_action, log_acceptance = propose_field(current_field, current_action)
 
             if log_acceptance >= 0 or np.exp(log_acceptance) > rng.random():
-                samples.append(proposed_field)
                 current_field = proposed_field
                 current_action = proposed_action
                 acceptance[idx] = 1
-            else:
-                samples.append(current_field)
+
+            samples.append(current_field)
 
         return samples, acceptance
+
+    def sample_observable(self,
+                          observable: Callable[[np.ndarray], np.ndarray | float],
+                          initial_field: np.ndarray,
+                          num_samples: int,
+                          method: str,
+                          rng: np.random.Generator,
+                          half_width: float = None,
+                          integration: str = "leapfrog", delta_t: float = None, time_steps: int = None,
+                          progress_bar: bool = True
+                          ) -> tuple[list[np.ndarray] | list[float], list[int], np.ndarray]:
+        """
+        Sample an observable with a specified proposal method.
+
+        Parameters
+        ----------
+        observable : Callable[[np.ndarray], np.ndarray | float]
+            Observable as a function of the field configuration.
+        initial_field : numpy.ndarray
+            Initial state of the field to build the Markov chain.
+        num_samples : int
+            Number of total samples.
+            This means that `num_samples - 1` samples are generated.
+        method : {'uniform', 'hamiltonian'}
+            Proposal method.
+        rng : numpy.random.Generator
+            Random number generator.
+        half_width : float
+            Half-width of the uniform distribution.
+        integration : {'leapfrog'}
+            Integration scheme for solving Hamilton's equations.
+        delta_t : float
+            Time step size for the integration scheme.
+        time_steps : int
+            Number of time steps for the integration scheme.
+        progress_bar : bool, default=True
+            Whether to display a progress bar for the sample generation.
+
+        Returns
+        -------
+        tuple[list[numpy.ndarray], list[int], numpy.ndarray]
+            List of observations, list of acceptances of each generated sample (1 if accepted, 0 otherwise),
+            and last field configuration sampled.
+        """
+        propose_field = get_proposal_function(self, method, rng, half_width, integration, delta_t, time_steps)
+
+        current_field = initial_field
+        current_action = self.evaluate_action(current_field)
+        current_observation = observable(current_field)
+        acceptance = [0 for _ in range(num_samples - 1)]
+        samples = [current_observation]
+
+        for idx in tqdm(range(num_samples - 1), disable=not progress_bar):
+            proposed_field, proposed_action, log_acceptance = propose_field(current_field, current_action)
+
+            if log_acceptance >= 0 or np.exp(log_acceptance) > rng.random():
+                current_field = proposed_field
+                current_action = proposed_action
+                current_observation = observable(current_field)
+                acceptance[idx] = 1
+
+            samples.append(current_observation)
+
+        return samples, acceptance, current_field

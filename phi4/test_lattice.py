@@ -6,7 +6,7 @@ from phi4.implementation.lattice import Phi4Lattice
 def test_lattice_uniform(lattice: Phi4Lattice):
     rng = np.random.default_rng(seed=42)
     initial_field = rng.random(size=lattice.shape)
-    samples, acceptance = lattice.sample(initial_sample=initial_field,
+    samples, acceptance = lattice.sample(initial_field=initial_field,
                                          num_samples=50_000,
                                          method="uniform", rng=rng, half_width=0.05)
     mean_acceptance = f'{np.mean(acceptance) * 100:.2f}%'
@@ -17,7 +17,7 @@ def test_lattice_uniform(lattice: Phi4Lattice):
 def test_lattice_hamiltonian(lattice: Phi4Lattice):
     rng = np.random.default_rng(seed=42)
     initial_field = rng.random(size=lattice.shape)
-    samples, acceptance = lattice.sample(initial_sample=initial_field,
+    samples, acceptance = lattice.sample(initial_field=initial_field,
                                          num_samples=10_000,
                                          method="hamiltonian", rng=rng,
                                          integration="leapfrog", delta_t=0.05, time_steps=round(1. / 0.05))

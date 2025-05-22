@@ -102,7 +102,7 @@ def get_step_sizes():
             next_initial_state = None
             mean_acceptance = 0.0
             for delta_t in initial_step_sizes:
-                samples, acceptance = lattice.sample(initial_sample=initial_sample,
+                samples, acceptance = lattice.sample(initial_field=initial_sample,
                                                      num_samples=1_000,
                                                      method='hamiltonian',
                                                      rng=rng,
@@ -130,7 +130,7 @@ def get_step_sizes():
 
                 for _ in range(10):
                     best_step_size += dt_increase
-                    samples, acceptance = lattice.sample(initial_sample=next_initial_state,
+                    samples, acceptance = lattice.sample(initial_field=next_initial_state,
                                                          num_samples=1_000,
                                                          method='hamiltonian',
                                                          rng=rng,
