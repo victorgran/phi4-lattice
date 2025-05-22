@@ -105,12 +105,12 @@ def find_parameters(linear_sizes: list[int] | np.ndarray,
 
     if method == 'uniform':
         def partial_sample(x: float, init_sample):
-            samples, acceptances = lattice.sample(init_sample, half_width=x, **sampler_dict)
+            samples, acceptances = lattice.sample_field(init_sample, half_width=x, **sampler_dict)
             return samples[-1], np.mean(acceptances)
     elif method == 'hamiltonian':
         def partial_sample(x: float, init_sample):
-            samples, acceptances = lattice.sample(init_sample, delta_t=x,
-                                                  time_steps=round(1. / x), **sampler_dict)
+            samples, acceptances = lattice.sample_field(init_sample, delta_t=x,
+                                                        time_steps=round(1. / x), **sampler_dict)
             return samples[-1], np.mean(acceptances)
     else:
         raise ValueError(f"Method '{method}' not implemented")

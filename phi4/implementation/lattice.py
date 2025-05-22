@@ -90,15 +90,15 @@ class Phi4Lattice:
         force = self.laplacian(field) - (self.mass2 * field) - (2 * self.coupling_strength * (field ** 3))
         return force * 2
 
-    def sample(self,
-               initial_field: np.ndarray,
-               num_samples: int,
-               method: str,
-               rng: np.random.Generator,
-               half_width: float = None,
-               integration: str = "leapfrog", delta_t: float = None, time_steps: int = None,
-               progress_bar: bool = True
-               ) -> tuple[list[np.ndarray], list[int]]:
+    def sample_field(self,
+                     initial_field: np.ndarray,
+                     num_samples: int,
+                     method: str,
+                     rng: np.random.Generator,
+                     half_width: float = None,
+                     integration: str = "leapfrog", delta_t: float = None, time_steps: int = None,
+                     progress_bar: bool = True
+                     ) -> tuple[list[np.ndarray], list[int]]:
         """
         Sample field configurations with a specified proposal method.
 
@@ -150,7 +150,7 @@ class Phi4Lattice:
         return samples, acceptance
 
     def sample_observable(self,
-                          observable: Callable[[np.ndarray], np.ndarray | float],
+                          observable: Callable[[np.ndarray], float | np.ndarray],
                           initial_field: np.ndarray,
                           num_samples: int,
                           method: str,
@@ -158,7 +158,7 @@ class Phi4Lattice:
                           half_width: float = None,
                           integration: str = "leapfrog", delta_t: float = None, time_steps: int = None,
                           progress_bar: bool = True
-                          ) -> tuple[list[np.ndarray] | list[float], list[int], np.ndarray]:
+                          ) -> tuple[list[float | np.ndarray], list[int], np.ndarray]:
         """
         Sample an observable with a specified proposal method.
 
@@ -188,7 +188,7 @@ class Phi4Lattice:
 
         Returns
         -------
-        tuple[list[numpy.ndarray], list[int], numpy.ndarray]
+        tuple[list[float or numpy.ndarray], list[int], numpy.ndarray]
             List of observations, list of acceptances of each generated sample (1 if accepted, 0 otherwise),
             and last field configuration sampled.
         """
@@ -199,7 +199,7 @@ class Phi4Lattice:
         current_action = self.evaluate_action(current_field)
         current_observation = observable(current_field)
         acceptance = [0 for _ in range(num_samples - 1)]
-        samples = [current_observation]
+        observations = [current_observation]
 
         for idx in tqdm(range(num_samples - 1), disable=not progress_bar):
             proposed_field, proposed_action, log_acceptance = propose_field(current_field, current_action)
@@ -210,6 +210,6 @@ class Phi4Lattice:
                 current_observation = observable(current_field)
                 acceptance[idx] = 1
 
-            samples.append(current_observation)
+            observations.append(current_observation)
 
-        return samples, acceptance, current_field
+        return observations, acceptance, current_field

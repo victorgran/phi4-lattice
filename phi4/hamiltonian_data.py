@@ -63,10 +63,10 @@ def getAcceptanceStepSizes(linear_sizes: list | np.ndarray,
             lattice = Phi4Lattice(linear_sites=linear_size, mass2=mass2, coupling_strength=8.0)
             step_size = searchStepSize(step_size,
                                        get_acceptance=lambda x: np.mean(
-                                           lattice.sample(initial_sample,
-                                                          delta_t=x,
-                                                          time_steps=round(1. / x),
-                                                          **sampler_dict)[1]),
+                                           lattice.sample_field(initial_sample,
+                                                                delta_t=x,
+                                                                time_steps=round(1. / x),
+                                                                **sampler_dict)[1]),
                                        target_acceptance=target_acceptance)
             if mass_idx == 0:
                 last_linear_guess = step_size
@@ -102,14 +102,14 @@ def get_step_sizes():
             next_initial_state = None
             mean_acceptance = 0.0
             for delta_t in initial_step_sizes:
-                samples, acceptance = lattice.sample(initial_field=initial_sample,
-                                                     num_samples=1_000,
-                                                     method='hamiltonian',
-                                                     rng=rng,
-                                                     integration='leapfrog',
-                                                     delta_t=delta_t,
-                                                     time_steps=round(1. / delta_t),
-                                                     progress_bar=False)
+                samples, acceptance = lattice.sample_field(initial_field=initial_sample,
+                                                           num_samples=1_000,
+                                                           method='hamiltonian',
+                                                           rng=rng,
+                                                           integration='leapfrog',
+                                                           delta_t=delta_t,
+                                                           time_steps=round(1. / delta_t),
+                                                           progress_bar=False)
                 mean_acceptance = np.mean(acceptance)
                 if mean_acceptance > target_acceptance:
                     best_step_size = delta_t
@@ -130,14 +130,14 @@ def get_step_sizes():
 
                 for _ in range(10):
                     best_step_size += dt_increase
-                    samples, acceptance = lattice.sample(initial_field=next_initial_state,
-                                                         num_samples=1_000,
-                                                         method='hamiltonian',
-                                                         rng=rng,
-                                                         integration='leapfrog',
-                                                         delta_t=best_step_size,
-                                                         time_steps=round(1. / best_step_size),
-                                                         progress_bar=False)
+                    samples, acceptance = lattice.sample_field(initial_field=next_initial_state,
+                                                               num_samples=1_000,
+                                                               method='hamiltonian',
+                                                               rng=rng,
+                                                               integration='leapfrog',
+                                                               delta_t=best_step_size,
+                                                               time_steps=round(1. / best_step_size),
+                                                               progress_bar=False)
                     mean_acceptance = np.mean(acceptance)
 
                     if target_acceptance - 0.01 <= mean_acceptance <= target_acceptance + 0.01:
