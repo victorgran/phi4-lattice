@@ -15,4 +15,11 @@
 
 ## Tasks
 
-- [ ] Create a function to obtain the value of a single parameter based on finding the target acceptance. 
+- [x] Create a function to obtain the value of a single parameter based on finding the target acceptance.
+- [x] Merge all 3 files into a single .json file.
+Keywords are “finite_volume”, “phase_transition1”, “phase_transition2”.
+- [ ] Create a function that
+  - Loads the parameters from the file.
+  - Runs the sampling for a given number of samples, obtaining the value of the observable and storing it.
+  - Updates the initial sample to the last sample generated in this run.
+  - Generates figures of the observable value at each Monte Carlo step, to check for thermalization.
