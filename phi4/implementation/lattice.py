@@ -2,8 +2,6 @@ from collections.abc import Callable
 import numpy as np
 from tqdm import tqdm
 
-from .proposals import get_proposal_function
-
 
 def five_stencil_laplacian(field: np.ndarray) -> np.ndarray:
     """
@@ -25,6 +23,7 @@ def five_stencil_laplacian(field: np.ndarray) -> np.ndarray:
 
 
 class Phi4Lattice:
+
     def __init__(self, linear_sites: int, mass2: float, coupling_strength: float):
         self._linear_sites = linear_sites
         self.shape = (self._linear_sites, self._linear_sites)
@@ -130,6 +129,7 @@ class Phi4Lattice:
         tuple[list[numpy.ndarray], list[int]]
             List of samples and list with the acceptance of each generated sample (1 if accepted, 0 otherwise).
         """
+        from .proposals import get_proposal_function
         propose_field = get_proposal_function(self, method, rng, half_width, integration, delta_t, time_steps)
 
         current_field = initial_field
@@ -192,6 +192,7 @@ class Phi4Lattice:
             List of observations, list of acceptances of each generated sample (1 if accepted, 0 otherwise),
             and last field configuration sampled.
         """
+        from .proposals import get_proposal_function
         propose_field = get_proposal_function(self, method, rng, half_width, integration, delta_t, time_steps)
 
         current_field = initial_field
