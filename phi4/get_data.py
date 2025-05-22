@@ -3,11 +3,11 @@ import json
 import numpy as np
 
 from implementation.find_parameters import find_parameters
+from implementation.lattice import Phi4Lattice
 
 
 def get_initial_data(num_samples: int, target_acceptance: float,
                      method: str, integration: str = None):
-
     if method == "uniform":
         filenames = [f"data/uni{k}.json" for k in range(1, 4)]
     else:
@@ -67,9 +67,34 @@ def merge_files(method: str, integration: str = None):
     return
 
 
+def check_observables():
+    lattice = Phi4Lattice(linear_sites=5, mass2=-1.0, coupling_strength=8.0)
+    rng = np.random.default_rng(seed=42)
+    initial_field = rng.random(size=lattice.shape)
+
+    def observable(field: np.ndarray) -> np.ndarray:
+        return np.abs(np.sum(field) / field.size)
+
+    observations, acceptance, last_field = lattice.sample_observable(observable=observable,
+                                                                     initial_field=initial_field,
+                                                                     num_samples=50_000,
+                                                                     method="uniform",
+                                                                     rng=rng,
+                                                                     half_width=0.06)
+
+    print(np.mean(acceptance))
+    import matplotlib.pyplot as plt
+    fig, ax = plt.subplots()
+    ax.plot(observations[len(observations) // 2:])
+    plt.show()
+
+    return
+
+
 if __name__ == "__main__":
     uniform_settings = {"num_samples": 10_000, "method": "uniform", "target_acceptance": 0.75}
     leapfrog_settings = {"num_samples": 3_000, "method": "hamiltonian", "integration": "leapfrog",
                          "target_acceptance": 0.75}
     # get_initial_data(**leapfrog_settings)
-    merge_files("hamiltonian", integration="leapfrog")
+    # merge_files("hamiltonian", integration="leapfrog")
+    check_observables()
