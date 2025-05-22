@@ -3,7 +3,7 @@ import json
 import numpy as np
 from tqdm import tqdm
 
-from implementation.lattice import Phi4Lattice
+from .lattice import Phi4Lattice
 
 
 class NumpyEncoder(json.JSONEncoder):
