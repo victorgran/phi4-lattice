@@ -109,8 +109,8 @@ def burn_in_data(filename: str):
             data[data_key][data_idx]["initial_sample"] = last_field.tolist()
             fig, ax = plt.subplots()
             ax.plot(observations)
+            ax.set_title(fr"$N = {lattice.linear_sites}, m2 = {lattice.mass2}$")
             plt.savefig(f"data/figures/{method_str}_{data_key}_{data_idx}.png")
-        break
 
     with open(filename.split(".")[0] + "_thermalized.json", "w") as target_file:
         json.dump(data, target_file, indent=4)
