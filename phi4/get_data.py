@@ -1,5 +1,5 @@
 import json
-
+import matplotlib.pyplot as plt
 import numpy as np
 
 from implementation.find_parameters import find_parameters
@@ -67,6 +67,57 @@ def merge_files(method: str, integration: str = None):
     return
 
 
+def burn_in_data(filename: str):
+
+    with open(filename, "r") as source_file:
+        data = json.load(source_file)
+
+    method_str = filename[5:][:3]
+
+    if method_str == "uni":
+        def set_params_dict(parameter: float, linear_size: int):
+            return {"method": "uniform", "half_width": parameter, "num_samples": linear_size * 10_000}
+
+    elif method_str == "hmc":
+        def set_params_dict(parameter: float, linear_size: int):
+            return {"method": "hamiltonian",
+                    "integration": filename[5:][4:].split(".")[0],
+                    "num_samples": linear_size * 1_000,
+                    "delta_t": parameter,
+                    "time_steps": round(1. / parameter)}
+
+    else:
+        raise ValueError(f"File {filename} has a method not recognized.")
+
+    lattice = Phi4Lattice(linear_sites=0, mass2=0.0, coupling_strength=8.0)
+
+    def observable(field: np.ndarray) -> np.ndarray:
+        return np.abs(np.sum(field) / field.size)
+
+    for data_key, data_set in data.items():
+        for data_idx, data_point in data_set.items():
+            rng = np.random.default_rng(seed=42)  # Reseed each data point for independent reproducibility.
+            lattice.linear_sites = data_point["linear_size"]
+            lattice.mass2 = data_point["mass2"]
+            params_dict = set_params_dict(data_point["parameter"], data_point["linear_size"])
+            initial_field = np.asarray(data_point["initial_sample"])
+            observations, acceptance, last_field = lattice.sample_observable(observable=observable,
+                                                                             initial_field=initial_field,
+                                                                             rng=rng,
+                                                                             **params_dict)
+            print(np.mean(acceptance))
+            data[data_key][data_idx]["initial_sample"] = last_field.tolist()
+            fig, ax = plt.subplots()
+            ax.plot(observations)
+            plt.savefig(f"data/figures/{method_str}_{data_key}_{data_idx}.png")
+        break
+
+    with open(filename.split(".")[0] + "_thermalized.json", "w") as target_file:
+        json.dump(data, target_file, indent=4)
+
+    return
+
+
 def check_observables():
     lattice = Phi4Lattice(linear_sites=5, mass2=-1.0, coupling_strength=8.0)
     rng = np.random.default_rng(seed=42)
@@ -83,7 +134,6 @@ def check_observables():
                                                                      half_width=0.06)
 
     print(np.mean(acceptance))
-    import matplotlib.pyplot as plt
     fig, ax = plt.subplots()
     ax.plot(observations[len(observations) // 2:])
     plt.show()
@@ -97,4 +147,5 @@ if __name__ == "__main__":
                          "target_acceptance": 0.75}
     # get_initial_data(**leapfrog_settings)
     # merge_files("hamiltonian", integration="leapfrog")
-    check_observables()
+    # check_observables()
+    burn_in_data("data/uniform.json")
