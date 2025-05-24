@@ -1,6 +1,7 @@
 import json
 import matplotlib.pyplot as plt
 import numpy as np
+from tqdm import tqdm
 
 from implementation.find_parameters import find_parameters
 from implementation.lattice import Phi4Lattice
@@ -91,10 +92,10 @@ def burn_in_data(filename: str):
 
     lattice = Phi4Lattice(linear_sites=0, mass2=0.0, coupling_strength=8.0)
 
-    def observable(field: np.ndarray) -> np.ndarray:
+    def observable(field: np.ndarray) -> float:
         return np.abs(np.sum(field) / field.size)
 
-    for data_key, data_set in data.items():
+    for data_key, data_set in tqdm(data.items()):
         for data_idx, data_point in data_set.items():
             rng = np.random.default_rng(seed=42)  # Reseed each data point for independent reproducibility.
             lattice.linear_sites = data_point["linear_size"]
@@ -104,8 +105,9 @@ def burn_in_data(filename: str):
             observations, acceptance, last_field = lattice.sample_observable(observable=observable,
                                                                              initial_field=initial_field,
                                                                              rng=rng,
+                                                                             progress_bar=False,
                                                                              **params_dict)
-            print(np.mean(acceptance))
+            print(f"N = {lattice.linear_sites}, m2 = {lattice.mass2:.3f}, mean acceptance: {np.mean(acceptance):.2f}")
             data[data_key][data_idx]["initial_sample"] = last_field.tolist()
             fig, ax = plt.subplots()
             ax.plot(observations)
