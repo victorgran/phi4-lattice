@@ -164,7 +164,7 @@ class Phi4Lattice:
 
         Parameters
         ----------
-        observable : Callable[[np.ndarray], np.ndarray | float]
+        observable : Callable[[numpy.ndarray], float or numpy.ndarray]
             Observable as a function of the field configuration.
         initial_field : numpy.ndarray
             Initial state of the field to build the Markov chain.
