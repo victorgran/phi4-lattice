@@ -76,13 +76,13 @@ def burn_in_data(filename: str):
 
     if method_str == "uni":
         def set_params_dict(parameter: float, linear_size: int):
-            return {"method": "uniform", "half_width": parameter, "num_samples": linear_size * 10_000}
+            return {"method": "uniform", "half_width": parameter, "num_samples": linear_size * 20_000}
 
     elif method_str == "hmc":
         def set_params_dict(parameter: float, linear_size: int):
             return {"method": "hamiltonian",
                     "integration": filename[5:][4:].split(".")[0],
-                    "num_samples": linear_size * 1_000,
+                    "num_samples": linear_size * 2_000,
                     "delta_t": parameter,
                     "time_steps": round(1. / parameter)}
 
